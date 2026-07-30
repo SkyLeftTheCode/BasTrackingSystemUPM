@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Bus Tracking Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #800000;
+            color: white; padding: 10px 20px; border-radius: 5px; }
+        .route-section { background: white; padding: 20px; margin-top: 20px; border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .route-title { border-left: 5px solid #800000; padding-left: 10px; color: #800000; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .no-bus { color: #999; font-style: italic; }
+        .logout { color: white; text-decoration: none; font-weight: bold; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-active { background-color: #d1e7dd; color: #0f5132; }
+        .status-resting { background-color: #fff3cd; color: #664d03; font-style: italic; }
+        .row-resting { background-color: #fcfcfc; color: #777; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h2>UPM Student Bus Tracking Dashboard</h2>
+    <a th:href="@{/logout}" class="logout">Logout</a>
+</div>
+<div id="dynamic-bus-container">
+    <div class="route-section">
+        <h3 class="route-title">Route A (KPZ Main)</h3>
+        <p style="font-size: 13px; color:#555;">Path: KPZ → FBMK → FSKTM → FS → SPE →
+            FSTM → KPZ</p>
+        <table th:if="${not #lists.isEmpty(routeABuses)}">
+            <tr>
+                <th>Bus Plate No</th>
+                <th>Operation Status</th>
+                <th>Current Location</th>
+                <th>ETA Next Stop</th>
+            </tr>
+            <tr th:each="bus : ${routeABuses}" th:class="${bus.onDuty} ? '' : 'row-resting'">
+                <td th:text="${bus.plateNo}"></td>
+                <td>
+                    <span th:if="${bus.onDuty}" class="status-badge status-active">🟢 Active Duty</span>
+                    <span th:if="${!bus.onDuty}" class="status-badge status-resting">🟡 Resting / Driver
+Break</span>
+                </td>
+                <td style="font-weight: bold;" th:styleappend="${bus.onDuty} ? 'color: green;' : 'color:
+#777;'"
+                    th:text="${bus.onDuty} ? ${bus.currentLocation} : 'Standby / Paused'"></td>
+                <td th:text="${bus.onDuty} ? (${bus.etaNextStop} + ' Mins') : '-'"></td>
+            </tr>
+        </table>
+        <p class="no-bus" th:if="${#lists.isEmpty(routeABuses)}">No buses operating on Route A at the
+            moment.</p>
+    </div>
+    <div class="route-section">
+        <h3 class="route-title">Route B (K10 Main)</h3>
+        <p style="font-size: 13px; color:#555;">Path: K10 → FBMK → FSKTM → FS → SPE → FSTM
+            → K10</p>
+        <table th:if="${not #lists.isEmpty(routeBBuses)}">
+            <tr>
+                <th>Bus Plate No</th>
+                <th>Operation Status</th>
+                <th>Current Location</th>
+                <th>ETA Next Stop</th>
+            </tr>
+            <tr th:each="bus : ${routeBBuses}" th:class="${bus.onDuty} ? '' : 'row-resting'">
+                <td th:text="${bus.plateNo}"></td>
+                <td>
+                    <span th:if="${bus.onDuty}" class="status-badge status-active">🟢 Active Duty</span>
+                    <span th:if="${!bus.onDuty}" class="status-badge status-resting">🟡 Resting / Driver
+Break</span>
+                </td>
+                <td style="font-weight: bold;" th:styleappend="${bus.onDuty} ? 'color: green;' : 'color:
+#777;'"
+                    th:text="${bus.onDuty} ? ${bus.currentLocation} : 'Standby / Paused'"></td>
+                <td th:text="${bus.onDuty} ? (${bus.etaNextStop} + ' Mins') : '-'"></td>
+            </tr>
+        </table>
+        <p class="no-bus" th:if="${#lists.isEmpty(routeBBuses)}">No buses operating on Route B at the
+            moment.</p>
+    </div>
+    <div class="route-section">
+        <h3 class="route-title">Route C (KTMB Main)</h3>
+        <p style="font-size: 13px; color:#555;">Path: KTMB → FBMK → FSKTM → FS → SPE →
+            FSTM → KTMB</p>
+        <table th:if="${not #lists.isEmpty(routeCBuses)}">
+            <tr>
+                <th>Bus Plate No</th>
+                <th>Operation Status</th>
+                <th>Current Location</th>
+                <th>ETA Next Stop</th>
+            </tr>
+            <tr th:each="bus : ${routeCBuses}" th:class="${bus.onDuty} ? '' : 'row-resting'">
+                <td th:text="${bus.plateNo}"></td>
+                <td>
+                    <span th:if="${bus.onDuty}" class="status-badge status-active">🟢 Active Duty</span>
+                    <span th:if="${!bus.onDuty}" class="status-badge status-resting">🟡 Resting / Driver
+Break</span>
+                </td>
+                <td style="font-weight: bold;" th:styleappend="${bus.onDuty} ? 'color: green;' : 'color:
+#777;'"
+                    th:text="${bus.onDuty} ? ${bus.currentLocation} : 'Standby / Paused'"></td>
+                <td th:text="${bus.onDuty} ? (${bus.etaNextStop} + ' Mins') : '-'"></td>
+            </tr>
+        </table>
+        <p class="no-bus" th:if="${#lists.isEmpty(routeCBuses)}">No buses operating on Route C at the
+            moment.</p>
+    </div>
+</div>
+<script>
+    function fetchLatestBusStatus() {
+        const targetUrl = window.location.origin + "/student";
+        fetch(targetUrl)
+            .then(response => {
+                if (!response.ok) throw new Error("WAN Node disconnection detected.");
+                return response.text();
+            })
+            .then(htmlString => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlString, 'text/html');
+                const newContent = doc.getElementById('dynamic-bus-container').innerHTML;
+                document.getElementById('dynamic-bus-container').innerHTML = newContent;
+            })
+            .catch(error => console.error("Synchronization Latency Error:", error));
+    }
+    setInterval(fetchLatestBusStatus, 5000);
+</script>
+</body>
+</html>

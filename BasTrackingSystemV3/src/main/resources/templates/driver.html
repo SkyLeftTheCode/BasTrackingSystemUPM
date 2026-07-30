@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Operations Dashboard</title>
+    <link th:href="@{https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css}"
+          rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 20px; }
+        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; max-width: 500px; margin: auto; }
+        .header-title { color: #800000; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+
+    <div th:if="${!isInJourney}" class="card p-4 text-center bg-white">
+        <h2 class="header-title mb-4">START UPM BUS DUTY</h2>
+        <p class="text-secondary text-start">Welcome back, <span class="fw-bold text-dark"
+                                                                 th:text="${driver.name}">Driver</span>!</p>
+
+        <form th:action="@{/driver/start}" method="post" class="text-start">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Select Bus Plate:</label>
+                <select name="plateNo" class="form-select" required>
+                    <option value="" disabled selected>-- Choose Bus --</option>
+                    <option th:each="b : ${buses}"
+                            th:if="${b.status == 'AVAILABLE'}"
+                            th:value="${b.plateNo}"
+                            th:text="${b.plateNo} + ' (' + ${b.status} + ')'"></option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Select Active Route:</label>
+                <select name="routeId" class="form-select" required>
+                    <option value="" disabled selected>-- Choose Route --</option>
+                    <option value="A">Route A (KPZ Main)</option>
+                    <option value="B">Route B (K10 Main)</option>
+                    <option value="C">Route C (KTMB Main)</option>
+
+
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Commence Journey
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <a th:href="@{/logout}" class="btn btn-link text-secondary text-decoration-none">←
+                Logout</a>
+        </div>
+    </div>
+
+    <div th:if="${isInJourney}" class="card p-4 text-center bg-white">
+        <h2 class="header-title mb-3">UPM LIVE TRACKING HUB</h2>
+
+        <div class="mb-3 d-flex justify-content-between align-items-center bg-light p-2 rounded">
+            <span>Duty Operations Status:</span>
+            <form th:action="@{/driver/toggle-duty}" method="post" class="d-inline">
+                <input type="hidden" name="plateNo" th:value="${activeBus.plateNo}">
+                <button type="submit" th:class="${activeBus.onDuty} ? 'btn btn-sm btn-success' : 'btn
+btn-sm btn-secondary'"
+                        th:text="${activeBus.onDuty} ? 'ACTIVE ON-DUTY' : 'STANDBY
+OFF-DUTY'"></button>
+            </form>
+        </div>
+
+        <div th:if="${activeBus.onDuty}">
+            <div class="mb-4 text-start bg-light p-3 rounded border-start border-4 border-success">
+                <p class="mb-2"><strong>Bus Number Plate:</strong> <span class="badge bg-dark"
+                                                                         th:text="${activeBus.plateNo}">UPM 1</span></p>
+                <p class="mb-2"><strong>Assigned Route:</strong> <span class="fw-bold text-success"
+                                                                       th:text="'Route ' + ${activeBus.currentRouteId}">A</span></p>
+                <p class="mb-2"><strong>Current Location:</strong> <span class="text-primary fw-bold"
+                                                                         th:text="${activeBus.currentLocation}">Depot</span></p>
+                <p class="mb-2"><strong>Next Stop Destination:</strong> <span class="text-warning
+fw-bold" th:text="${nextStop}">-</span></p>
+                <p class="mb-0"><strong>Estimated Arrival Time (ETA):</strong> <span
+                        class="text-danger fw-bold" th:text="${activeBus.etaNextStop}">0</span> Minutes</p>
+            </div>
+
+            <form th:action="@{/driver/report-jam}" method="post" class="mb-3 text-start">
+                <input type="hidden" name="plateNo" th:value="${activeBus.plateNo}">
+                <label class="form-label fw-bold text-secondary" style="font-size:12px;">Traffic Reporting
+                    Condition:</label>
+                <div class="btn-group w-100" role="group">
+                    <button type="submit" name="status" value="NORMAL"
+                            th:class="${activeBus.trafficStatus == 'NORMAL'} ? 'btn btn-outline-secondary
+active' : 'btn btn-outline-secondary'">Clear Road</button>
+                    <button type="submit" name="status" value="HEAVY JAM"
+
+
+                            th:class="${activeBus.trafficStatus == 'HEAVY JAM'} ? 'btn btn-outline-danger
+active' : 'btn btn-outline-danger'">
+                        ⚠
+                        Traffic Jam (+10m)</button>
+                </div>
+            </form>
+
+            <form th:action="@{/driver/next-stop}" method="post" class="mb-2">
+                <input type="hidden" name="plateNo" th:value="${activeBus.plateNo}">
+                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold" th:disabled="${nextStop
+== 'End of Route'}">
+                    Arrived at Next Stop
+                    �
+                    �
+
+                </button>
+            </form>
+
+            <form th:action="@{/driver/undo-stop}" method="post" class="mb-3">
+                <input type="hidden" name="plateNo" th:value="${activeBus.plateNo}">
+                <button type="submit" class="btn btn-warning w-100 py-1 text-white fw-bold"
+                        th:disabled="${activeBus.currentLocation == activeBus.previousLocation}">
+
+                    ↩
+                    Undo (Misclicked Stop)
+                </button>
+            </form>
+        </div>
+
+        <div th:if="${!activeBus.onDuty}" class="alert alert-warning my-4">
+            <strong>System Paused:</strong> You are currently off-duty. Turn status back to ON-DUTY
+            above to view navigation tracking.
+        </div>
+
+        <form th:action="@{/driver/end}" method="post" class="pt-2 border-top">
+            <input type="hidden" name="plateNo" th:value="${activeBus.plateNo}">
+            <button type="submit" class="btn btn-danger w-100 py-2 fw-bold">Terminate Journey
+                Operations
+                �
+                �
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
